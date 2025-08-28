@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PhantomByte Pursuit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg-color: #0d1117;
+        --primary-accent: #22d3ee; /* cyan */
+        --secondary-accent: #a855f7; /* purple */
+        --light-shadow: rgba(40, 50, 60, 0.5);
+        --dark-shadow: rgba(0, 0, 0, 0.6);
+      }
+
+      body {
+        font-family: 'Share Tech Mono', monospace;
+        background-color: var(--bg-color);
+      }
+      #background-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        opacity: 0.3;
+      }
+
+      .font-hacker {
+        font-family: 'VT323', monospace;
+      }
+
+      /* Neumorphic & Gradient Styles (Refined) */
+      .neumorphic-inset {
+        background-color: #0b0f14;
+        border-radius: 12px;
+        box-shadow: inset 5px 5px 10px var(--dark-shadow),
+                    inset -5px -5px 10px var(--light-shadow);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .neumorphic-outset {
+        background-color: var(--bg-color);
+        border-radius: 12px;
+        box-shadow: 5px 5px 10px var(--dark-shadow),
+                    -5px -5px 10px var(--light-shadow);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.2s ease-in-out;
+      }
+      .neumorphic-outset:active {
+        box-shadow: inset 3px 3px 6px var(--dark-shadow),
+                    inset -3px -3px 6px var(--light-shadow);
+      }
+      .gradient-border {
+        border: 2px solid;
+        border-image-slice: 1;
+        border-image-source: linear-gradient(to right bottom, var(--primary-accent), var(--secondary-accent));
+      }
+
+      /* HUD Decorative Elements */
+      .hud-corner {
+        position: absolute;
+        width: 25px;
+        height: 25px;
+        border-color: var(--primary-accent);
+        opacity: 0.5;
+      }
+      .hud-corner.top-left { top: 0; left: 0; border-top: 2px solid; border-left: 2px solid; }
+      .hud-corner.top-right { top: 0; right: 0; border-top: 2px solid; border-right: 2px solid; }
+      .hud-corner.bottom-left { bottom: 0; left: 0; border-bottom: 2px solid; border-left: 2px solid; }
+      .hud-corner.bottom-right { bottom: 0; right: 0; border-bottom: 2px solid; border-right: 2px solid; }
+
+      /* Scanline Overlay for Terminals */
+      .scanline-overlay {
+        position: relative;
+        overflow: hidden;
+      }
+      .scanline-overlay::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.3) 0px,
+          rgba(0, 0, 0, 0.3) 1px,
+          transparent 1px,
+          transparent 2px
+        );
+        animation: scanline 150s linear infinite;
+        opacity: 0.2;
+      }
+      @keyframes scanline {
+        from { background-position: 0 0; }
+        to { background-position: 0 -100vh; }
+      }
+
+      /* Animation Styles */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.98); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+      .cursor-blink {
+        animation: blink 1s step-end infinite;
+      }
+      @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+        40%, 60% { transform: translate3d(3px, 0, 0); }
+      }
+      .animate-shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+      }
+      @keyframes flash-green {
+        0%, 100% { color: #4ade80; }
+        50% { color: #f0fdf4; }
+      }
+      .animate-flash-green {
+        animation: flash-green 0.3s ease-out;
+      }
+      @keyframes pulse-cyan {
+        0%, 100% { color: #fff; transform: scale(1); text-shadow: none; }
+        50% { color: var(--primary-accent); transform: scale(1.05); text-shadow: 0 0 8px var(--primary-accent); }
+      }
+      .animate-pulse-cyan {
+        animation: pulse-cyan 0.8s ease-in-out;
+      }
+      
+      @keyframes glitch {
+        0% { transform: translate(0); }
+        20% { transform: translate(-3px, 3px); }
+        40% { transform: translate(-3px, -3px); }
+        60% { transform: translate(3px, 3px); }
+        80% { transform: translate(3px, -3px); }
+        100% { transform: translate(0); }
+      }
+      .glitch-effect {
+        position: relative;
+      }
+      .glitch-effect::before,
+      .glitch-effect::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: var(--bg-color);
+        overflow: hidden;
+      }
+      .glitch-effect::before {
+        left: 2px;
+        text-shadow: -2px 0 #ff00c1;
+        clip: rect(44px, 450px, 56px, 0);
+        animation: glitch 5s infinite linear alternate-reverse;
+      }
+      .glitch-effect::after {
+        left: -2px;
+        text-shadow: -2px 0 var(--primary-accent), 2px 2px #ff00c1;
+        clip: rect(85px, 450px, 90px, 0);
+        animation: glitch 3s infinite linear alternate-reverse;
+      }
+       /* World Map Styles */
+       @keyframes draw-line {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .trace-line {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: draw-line 2s ease-out forwards;
+      }
+       @keyframes pulse-node {
+        0%, 100% {
+          r: 4;
+          stroke-width: 2;
+          opacity: 1;
+        }
+        50% {
+          r: 10;
+          stroke-width: 1;
+          opacity: 0.5;
+        }
+      }
+      .map-node.current {
+        animation: pulse-node 2s infinite;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.16.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/"
+  }
+}
+</script>
+</head>
+  <body class="text-gray-300">
+    <canvas id="background-canvas"></canvas>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
