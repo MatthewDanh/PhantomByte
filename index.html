@@ -16,6 +16,9 @@
         --secondary-accent: #a855f7; /* purple */
         --light-shadow: rgba(40, 50, 60, 0.5);
         --dark-shadow: rgba(0, 0, 0, 0.6);
+        --green-glow: rgba(74, 222, 128, 0.6);
+        --yellow-glow: rgba(250, 204, 21, 0.6);
+        --red-glow: rgba(248, 113, 113, 0.6);
       }
 
       body {
@@ -60,6 +63,26 @@
         border: 2px solid;
         border-image-slice: 1;
         border-image-source: linear-gradient(to right bottom, var(--primary-accent), var(--secondary-accent));
+      }
+
+      /* Difficulty Button Glows */
+      .difficulty-button {
+          transition: all 0.3s ease-out;
+      }
+      .difficulty-button:hover {
+          transform: scale(1.05);
+      }
+      .difficulty-easy:hover {
+          box-shadow: 0 0 15px var(--green-glow), inset 0 0 5px rgba(74, 222, 128, 0.3);
+          text-shadow: 0 0 5px var(--green-glow);
+      }
+      .difficulty-medium:hover {
+          box-shadow: 0 0 15px var(--yellow-glow), inset 0 0 5px rgba(250, 204, 21, 0.3);
+          text-shadow: 0 0 5px var(--yellow-glow);
+      }
+      .difficulty-hard:hover {
+          box-shadow: 0 0 15px var(--red-glow), inset 0 0 5px rgba(248, 113, 113, 0.3);
+          text-shadow: 0 0 5px var(--red-glow);
       }
 
       /* HUD Decorative Elements */

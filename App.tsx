@@ -74,6 +74,35 @@ const AgentLoginScreen: React.FC<{ onComplete: () => void }> = ({ onComplete }) 
     );
 };
 
+const Typewriter: React.FC<{ text: string; speed?: number; className?: string; onComplete?: () => void; }> = ({ text, speed = 25, className, onComplete }) => {
+    const [displayedText, setDisplayedText] = useState('');
+    const [isComplete, setIsComplete] = useState(false);
+    
+    useEffect(() => {
+        setDisplayedText('');
+        setIsComplete(false);
+        let i = 0;
+        const intervalId = setInterval(() => {
+            if (i < text.length) {
+                setDisplayedText(text.substring(0, i + 1));
+                i++;
+            } else {
+                clearInterval(intervalId);
+                setIsComplete(true);
+                if (onComplete) onComplete();
+            }
+        }, speed);
+        return () => clearInterval(intervalId);
+    }, [text, speed, onComplete]);
+    
+    return (
+        <div className={className}>
+            {displayedText}
+            {!isComplete && <span className="inline-block w-2 h-5 bg-gray-400 animate-pulse ml-1" />}
+        </div>
+    );
+};
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('start');
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
@@ -92,6 +121,7 @@ const App: React.FC = () => {
   const [traceHistory, setTraceHistory] = useState<Location[]>([]);
   
   const [startScreenStep, setStartScreenStep] = useState(0); // 0: login, 1: intro, 2: difficulty
+  const [briefingComplete, setBriefingComplete] = useState(false);
 
   useEffect(() => {
     if (gameState === 'loading') {
@@ -180,6 +210,7 @@ const App: React.FC = () => {
     setStartScreenStep(0);
     setGameState('start');
     setDifficulty(null);
+    setBriefingComplete(false);
   }, []);
   
   const advanceStory = useCallback(async (playerAction: string) => {
@@ -250,23 +281,25 @@ const App: React.FC = () => {
           <div className="text-center flex flex-col items-center max-w-4xl font-mono">
               {startScreenStep === 0 && <AgentLoginScreen onComplete={() => setStartScreenStep(1)} />}
               {startScreenStep === 1 && (
-                  <div className="animate-fadeIn">
+                  <div className="animate-fadeIn w-full">
                      <h1 className="text-6xl font-hacker text-cyan-400 mb-4 tracking-widest drop-shadow-[0_0_10px_rgba(34,211,238,0.7)]">
                         PhantomByte Pursuit
                      </h1>
-                     <p className="text-gray-400 mb-8 text-lg">
-                        Welcome, Agent. Your mission is to hunt the notorious hacker "PhantomByte". You'll be assisted by our drone, K.A.I. (Kinetic Autonomous Investigator). Use your terminal to issue commands, breach firewalls, and recover stolen data.
-                     </p>
-                    <button onClick={() => setStartScreenStep(2)} className="px-8 py-3 neumorphic-outset text-cyan-300 font-bold rounded-lg hover:text-cyan-200 transition-all duration-300 text-2xl font-hacker tracking-wide">Initiate Mission</button>
+                     <Typewriter 
+                         text="Welcome, Agent. Your mission is to hunt the notorious hacker &quot;PhantomByte&quot;. You'll be assisted by our drone, K.A.I. (Kinetic Autonomous Investigator). Use your terminal to issue commands, breach firewalls, and recover stolen data."
+                         className="text-gray-400 mb-8 text-lg max-w-2xl mx-auto min-h-[144px]"
+                         onComplete={() => setBriefingComplete(true)}
+                     />
+                    {briefingComplete && <button onClick={() => setStartScreenStep(2)} className="animate-fadeIn px-8 py-3 neumorphic-outset text-cyan-300 font-bold rounded-lg hover:text-cyan-200 transition-all duration-300 text-2xl font-hacker tracking-wide">Initiate Mission</button>}
                   </div>
               )}
             {startScreenStep === 2 && (
                 <div className="mt-4 animate-fadeIn">
                 <h2 className="text-3xl font-hacker text-cyan-400 mb-6">Select Mission Difficulty</h2>
                 <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-                  <button onClick={() => startGame('Easy')} className="px-8 py-4 bg-green-500/10 text-green-300 font-bold rounded-lg neumorphic-outset border-green-500/30 transform hover:scale-105 text-2xl font-hacker tracking-wide">Easy</button>
-                  <button onClick={() => startGame('Medium')} className="px-8 py-4 bg-yellow-500/10 text-yellow-300 font-bold rounded-lg neumorphic-outset border-yellow-500/30 transform hover:scale-105 text-2xl font-hacker tracking-wide">Medium</button>
-                  <button onClick={() => startGame('Hard')} className="px-8 py-4 bg-red-500/10 text-red-300 font-bold rounded-lg neumorphic-outset border-red-500/30 transform hover:scale-105 text-2xl font-hacker tracking-wide">Hard</button>
+                  <button onClick={() => startGame('Easy')} className="px-8 py-4 bg-green-500/10 text-green-300 font-bold rounded-lg neumorphic-outset border-green-500/30 text-2xl font-hacker tracking-wide difficulty-button difficulty-easy">Easy</button>
+                  <button onClick={() => startGame('Medium')} className="px-8 py-4 bg-yellow-500/10 text-yellow-300 font-bold rounded-lg neumorphic-outset border-yellow-500/30 text-2xl font-hacker tracking-wide difficulty-button difficulty-medium">Medium</button>
+                  <button onClick={() => startGame('Hard')} className="px-8 py-4 bg-red-500/10 text-red-300 font-bold rounded-lg neumorphic-outset border-red-500/30 text-2xl font-hacker tracking-wide difficulty-button difficulty-hard">Hard</button>
                 </div>
               </div>
             )}
